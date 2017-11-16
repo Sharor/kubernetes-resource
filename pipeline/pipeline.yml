@@ -1,0 +1,108 @@
+jobs: 
+- name: test-pull-request
+  public: true
+  plan:
+  - get: github-pull-request
+    trigger: true
+    version: every
+  - task: test
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: 
+          repository: golang
+          tag: "1.9"
+      inputs: 
+        - name: git
+        - name: github-pull-request
+      outputs: 
+        - name: artifacts
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+            cd github-pull-request 
+            C_PATH=$(pwd)
+            go test -v -p 1 ./...
+    on_success:
+      put: github-pull-request
+      params:
+        path: github-pull-request
+        status: success
+    on_failure:
+      put: github-pull-request
+      params:
+        path: github-pull-request
+        status: failure
+  - put: github-pull-request
+    params:
+      path: github-pull-request
+      status: success
+      merge:
+        method: merge
+        commit_msg: github-pull-request/pipeline/commitmsg.md
+    
+- name: build
+  public: true
+  plan: 
+  - get: git
+    trigger: true
+  - get: github-pull-request
+    passed: [test-pull-request]
+  - task: build
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: 
+          repository: golang
+          tag: "1.9"
+      inputs: 
+        - name: git
+        - name: github-pull-request
+      outputs: 
+        - name: artifacts
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+            cd github-pull-request 
+            C_PATH=$(pwd)
+            export GOOS=linux
+            export GOARCH=amd64
+            go build  -ldflags "-X github.com/praqma/concourse-git-phlow/repo.Version=`echo $VERSION`" -o $C_PATH/concourse-git-phlow/assets/check check/check.go
+            go build -ldflags "-X github.com/praqma/concourse-git-phlow/repo.Version=`echo $VERSION`" -o $C_PATH/concourse-git-phlow/assets/in in/in.go
+            go build -ldflags "-X github.com/praqma/concourse-git-phlow/repo.Version=`echo $VERSION`" -o $C_PATH/concourse-git-phlow/assets/out out/out.go
+
+            chmod +x $C_PATH/assets/check
+            chmod +x $C_PATH/assets/in
+            chmod +x $C_PATH/assets/out
+            cp -R $C_PATH/assets/* $C_PATH/artifacts/
+
+
+resources: 
+- name: github-pull-request
+  type: pull-request
+  source:
+    access_token: {{concourse-pull-request-token}}
+    private_key: {{concourse-token}}
+    repo: Sharor/kubernetes-resource
+    base: master
+
+- name: git
+  type: git
+  source:
+    uri: https://github.com/Sharor/kubernetes-resource.git
+    branch: master
+    username: {{github-username}}
+    password: {{github-password}}
+
+resource_types: 
+- name: pull-request
+  type: docker-image
+  source:
+    repository: jtarchie/pr
+    tag: v31
