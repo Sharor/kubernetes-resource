@@ -4,13 +4,10 @@ jobs:
   plan:
   - get: git
     trigger: true
+  - get: kubernetes
   - put: kubernetes
     params:
-      file: git/deployment.yml
-      status: success
-      merge:
-        method: merge
-        commit_msg: github-pull-request/pipeline/commitmsg.md
+      file: git/deployment.yml      
     
 resources: 
 - name: git
