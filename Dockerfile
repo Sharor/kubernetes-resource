@@ -1,9 +1,6 @@
 FROM alpine:3.5
-
-ENV kubectlDownload https://storage.googleapis.com/kubernetes-release/release/v1.8.0/bin/linux/amd64/kubectl
-
-RUN curl -L -o /usr/local/bin/kubectl \
-        ${kubectlDownload}; \
-    chmod +x /usr/local/bin/kubectl
-
+MAINTAINER Sharor
+ENV kubectlVersion v1.8.0
+RUN apk add --no-cache curl && curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/$(kubectlVersion)/bin/linux/amd64/kubectl && \
+  apk del curl && chmod +x usr/local/bin/kubectl
 COPY assets/  /opt/resource/

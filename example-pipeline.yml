@@ -1,0 +1,34 @@
+jobs: 
+- name: kubernetes-push
+  public: true
+  plan:
+  - get: git
+    trigger: true
+  - put: kubernetes
+    params:
+      file: git/deployment.yml
+      status: success
+      merge:
+        method: merge
+        commit_msg: github-pull-request/pipeline/commitmsg.md
+    
+resources: 
+- name: git
+  type: git
+  source:
+    uri: https://github.com/Sharor/kubernetes-resource.git
+    branch: master
+    username: {{github-username}}
+    password: {{github-password}}
+
+- name: kubernetes
+  type: kubernetes
+  source:
+   
+
+resource_types: 
+- name: kubernetes
+  type: docker-image
+  source:
+    repository: sharor/kubernetes-resource
+    tag: 1.0.0
