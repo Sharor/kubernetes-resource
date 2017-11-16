@@ -1,11 +1,13 @@
 package main
 
 import (
-	"os"
-	"encoding/json"
-	"os/exec"
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"os/exec"
+	"time"
 )
 
 func main() {
@@ -19,23 +21,34 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	var stderrBuffer bytes.Buffer
+	var stdOutBuffer bytes.Buffer
+	err = ioutil.WriteFile("cert.crt", []byte(oreq.Source.CertAuthority), 0644)
+	err = ioutil.WriteFile("client.crt", []byte(oreq.Source.ClientCert), 0644)
+	err = ioutil.WriteFile("client.key", []byte(oreq.Source.ClientKey), 0644)
 
-	var buffer bytes.Buffer
-
-	cmd := exec.Command("kubectl", "--certificate-authority", oreq.Source.CertAuthority, "--client-key",
-		oreq.Source.ClientKey, "--client-certificate", oreq.Source.ClientCert, "--server", oreq.Source.ClusterURL, "get", "pods")
-
-	cmd.Stdout = &buffer
-
-	err = cmd.Start()
+	cmd := exec.Command("kubectl", "--certificate-authority", "cert.crt", "--client-key",
+		"client.key", "--client-certificate", "client.crt", "--server", oreq.Source.ClusterURL, "get", "pods", "-n", "test")
+	cmd.Stderr = &stderrBuffer
+	cmd.Stdout = &stdOutBuffer
+	err = cmd.Run()
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
-	fmt.Println(buffer.String())
+	fmt.Println(stderrBuffer.String())
+	fmt.Println(stdOutBuffer.String())
 
+	versions := []Version{}
+	versions = append(versions, Version{
+		Version: time.Now().String(),
+	})
+
+	json.NewEncoder(os.Stdout).Encode(versions)
 }
 
+//CheckRequest ...
 type CheckRequest struct {
 	Source Source `json:"source"`
 }
@@ -49,22 +62,7 @@ type Source struct {
 	Namespace     string `json:"namespace"`
 }
 
-type OutResponse struct {
-	Version Version `json:""`
-}
-
 //Version ...
 type Version struct {
 	Version string `json:"version"`
-}
-
-//Metadata ...
-type Metadata struct {
-	Pods []string `json:"metadata"`
-}
-
-//MetadataField ...
-type MetadataField struct {
-	Key   string
-	Value string
 }
