@@ -75,6 +75,7 @@ jobs:
             cd git           
             export GOOS=linux
             export GOARCH=amd64
+            CGO_ENABLED=0
             go build -o $C_PATH/artifacts/check check/check.go
             go build -o $C_PATH/artifacts/in in/in.go 
             go build -o $C_PATH/artifacts/out out/out.go 
