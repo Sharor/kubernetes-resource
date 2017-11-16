@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"encoding/json"
+	"os/exec"
 )
 
 func main() {
@@ -10,25 +11,34 @@ func main() {
 	if len(os.Args) < 2 {
 	}
 
-	oreq := OutRequest{}
+	oreq := CheckRequest{}
 
 	err := json.NewDecoder(os.Stdin).Decode(oreq)
 	if err != nil {
+		panic(err)
+	}
 
+	cmd := exec.Command("kubectl", "--certificate-authority", oreq.Source.CertAuthority, "--client-key",
+		oreq.Source.ClientKey, "--client-certificate", oreq.Source.ClientCert, "--server", oreq.Source.ClusterURL, "get", "pods")
+
+	err = cmd.Start()
+	if err != nil {
+		panic(err)
 	}
 
 }
 
-type OutRequest struct {
+type CheckRequest struct {
 	Source Source `json:"source"`
 }
 
 //Source ...
 type Source struct {
-	ClusterURL string `json:"cluster_url"`
-	ClusterCA  string `json:"cluster_ca"`
-	AdminKey   string `json:"admin_key"`
-	AdminCert  string `json:"admin_cert"`
+	ClusterURL    string `json:"cluster_url"`
+	CertAuthority string `json:"certificate_authority"`
+	ClientKey     string `json:"client_key"`
+	ClientCert    string `json:"client_certificate"`
+	Namespace     string `json:"namespace"`
 }
 
 type OutResponse struct {
