@@ -71,8 +71,8 @@ jobs:
         args:
         - -exc
         - |
-            cd git
             C_PATH=$(pwd)
+            cd git           
             export GOOS=linux
             export GOARCH=amd64
             go build -o $C_PATH/artifacts/check check/check.go
@@ -82,7 +82,8 @@ jobs:
             chmod +x $C_PATH/artifacts/check
             chmod +x $C_PATH/artifacts/in
             chmod +x $C_PATH/artifacts/out
-            mv Dockerfile $C_PATH/artifacts
+            cp Dockerfile $C_PATH/artifacts/Dockerfile
+            
   - put: release
     params:       
       build: artifacts
