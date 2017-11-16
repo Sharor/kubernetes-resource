@@ -32,4 +32,4 @@ resource_types:
   type: docker-image
   source:
     repository: sharor/kubernetes-resource
-    tag: '1.0.18'
+    tag: '1.0.30'
