@@ -71,20 +71,20 @@ jobs:
         args:
         - -exc
         - |
-            cd github-pull-request 
+            cd git
             C_PATH=$(pwd)
             export GOOS=linux
             export GOARCH=amd64
-            go build  -ldflags "-X github.com/praqma/concourse-git-phlow/repo.Version=`echo $VERSION`" -o $C_PATH/concourse-git-phlow/assets/check check/check.go
-            go build -ldflags "-X github.com/praqma/concourse-git-phlow/repo.Version=`echo $VERSION`" -o $C_PATH/concourse-git-phlow/assets/in in/in.go
-            go build -ldflags "-X github.com/praqma/concourse-git-phlow/repo.Version=`echo $VERSION`" -o $C_PATH/concourse-git-phlow/assets/out out/out.go
+            go build -o $C_PATH/artifacts/check check/check.go
+            go build -o $C_PATH/artifacts/in in/in.go 
+            go build -o $C_PATH/artifacts/out out/out.go 
 
-            chmod +x $C_PATH/assets/check
-            chmod +x $C_PATH/assets/in
-            chmod +x $C_PATH/assets/out
-            cp -R $C_PATH/assets/* $C_PATH/artifacts/
+            chmod +x $C_PATH/artifacts/check
+            chmod +x $C_PATH/artifacts/in
+            chmod +x $C_PATH/artifacts/out
   - put: release
     params:       
+      build: git
       cache: false
       tag: version/version
       tag_as_latest: true
