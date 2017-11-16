@@ -4,6 +4,8 @@ import (
 	"os"
 	"encoding/json"
 	"os/exec"
+	"bytes"
+	"fmt"
 )
 
 func main() {
@@ -13,18 +15,24 @@ func main() {
 
 	oreq := CheckRequest{}
 
-	err := json.NewDecoder(os.Stdin).Decode(oreq)
+	err := json.NewDecoder(os.Stdin).Decode(&oreq)
 	if err != nil {
 		panic(err)
 	}
 
+	var buffer bytes.Buffer
+
 	cmd := exec.Command("kubectl", "--certificate-authority", oreq.Source.CertAuthority, "--client-key",
 		oreq.Source.ClientKey, "--client-certificate", oreq.Source.ClientCert, "--server", oreq.Source.ClusterURL, "get", "pods")
+
+	cmd.Stdout = &buffer
 
 	err = cmd.Start()
 	if err != nil {
 		panic(err)
 	}
+
+	fmt.Println(buffer.String())
 
 }
 
