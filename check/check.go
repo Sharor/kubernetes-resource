@@ -28,7 +28,7 @@ func main() {
 	err = ioutil.WriteFile("client.key", []byte(oreq.Source.ClientKey), 0644)
 
 	cmd := exec.Command("kubectl", "--certificate-authority", "cert.crt", "--client-key",
-		"client.key", "--client-certificate", "client.crt", "--server", oreq.Source.ClusterURL, "get", "pods", "-n", "test")
+		"client.key", "--client-certificate", "client.crt", "--server", oreq.Source.ClusterURL, "get", "pods")
 	cmd.Stderr = &stderrBuffer
 	cmd.Stdout = &stdOutBuffer
 	err = cmd.Run()
