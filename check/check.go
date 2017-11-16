@@ -28,6 +28,9 @@ func main() {
 	err = ioutil.WriteFile("client.crt", []byte(CheckRequest.Source.ClientCert), 0644)
 	err = ioutil.WriteFile("client.key", []byte(CheckRequest.Source.ClientKey), 0644)
 
+	fmt.Fprintln(os.Stderr, CheckRequest.Source.CertAuthority)
+	fmt.Fprintln(os.Stderr, CheckRequest.Source.ClientCert)
+	fmt.Fprintln(os.Stderr, CheckRequest.Source.ClientKey)
 	cmd := exec.Command("kubectl", "--certificate-authority", "cert.crt", "--client-key",
 		"client.key", "--client-certificate", "client.crt", "--server", CheckRequest.Source.ClusterURL, "get", "pods")
 	cmd.Stderr = &stderrBuffer
