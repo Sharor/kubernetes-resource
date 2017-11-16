@@ -21,6 +21,10 @@ resources:
 - name: kubernetes
   type: kubernetes
   source:
+    cluster_url: https://192.168.99.100:8443
+    certificate_authority: {{minikube_cert}}
+    client_certificate: {{minikube_admin}}
+    client_key: {{minikube_key}}
    
 
 resource_types: 
@@ -28,4 +32,4 @@ resource_types:
   type: docker-image
   source:
     repository: sharor/kubernetes-resource
-    tag: 1.0.0
+    tag: '1.0.0'

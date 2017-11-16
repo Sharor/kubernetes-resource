@@ -49,8 +49,11 @@ jobs:
   plan: 
   - get: git
     trigger: true
-  - get: github-pull-request
-    passed: [test-pull-request]
+  #- get: github-pull-request
+  #  passed: [test-pull-request]
+  - get: version
+  - put: version
+    params: {bump: patch}
   - task: build
     config:
       platform: linux
@@ -61,7 +64,6 @@ jobs:
           tag: "1.9"
       inputs: 
         - name: git
-        - name: github-pull-request
       outputs: 
         - name: artifacts
       run:
@@ -81,7 +83,11 @@ jobs:
             chmod +x $C_PATH/assets/in
             chmod +x $C_PATH/assets/out
             cp -R $C_PATH/assets/* $C_PATH/artifacts/
-
+  - put: release
+    params:       
+      cache: false
+      tag: version/version
+      tag_as_latest: true
 
 resources: 
 - name: github-pull-request
@@ -99,6 +105,23 @@ resources:
     branch: master
     username: {{github-username}}
     password: {{github-password}}
+
+- name: version
+  type: semver
+  source:
+    driver: git
+    initial_version: 0.0.0
+    uri: git@github.com:Sharor/kubernetes-resource.git
+    branch: version
+    file: version
+    private_key: {{concourse-token}}
+
+- name: release
+  type: docker-image
+  source:
+    repository: sharor/concourse-git-phlow
+    username: {{docker-hub-username}}
+    password: {{docker-hub-password}}
 
 resource_types: 
 - name: pull-request
