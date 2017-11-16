@@ -120,7 +120,7 @@ resources:
 - name: release
   type: docker-image
   source:
-    repository: sharor/concourse-git-phlow
+    repository: sharor/kubernetes-resource
     username: {{docker-hub-username}}
     password: {{docker-hub-password}}
 
