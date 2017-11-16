@@ -82,9 +82,10 @@ jobs:
             chmod +x $C_PATH/artifacts/check
             chmod +x $C_PATH/artifacts/in
             chmod +x $C_PATH/artifacts/out
+            mv Dockerfile $C_PATH/artifacts
   - put: release
     params:       
-      build: git
+      build: artifacts
       cache: false
       tag: version/version
       tag_as_latest: true
