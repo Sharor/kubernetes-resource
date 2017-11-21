@@ -4,10 +4,29 @@ jobs:
   plan:
   - get: git
     trigger: true
-  - get: kubernetes
+  - task: build
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: 
+          repository: devth/helm
+          tag: '2.7.2'
+      inputs: 
+        - name: git
+      outputs: 
+        - name: chart
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          cd git
+          helm package .
+          mv myapp-0.1.0.tgz ../chart
   - put: kubernetes
     params:
-      file: git/deployment.yml      
+      chart: chart/myapp-0.1.0.tgz     
     
 resources: 
 - name: git
@@ -19,17 +38,15 @@ resources:
     password: {{github-password}}
 
 - name: kubernetes
-  type: kubernetes
+  type: helm
   source:
     cluster_url: https://192.168.99.100:8443
-    certificate_authority: {{minikube_cert}}
-    client_certificate: {{minikube_admin}}
-    client_key: {{minikube_key}}
-   
+    cluster_ca: {{minikube_cert_base64}}    
+    admin_cert: {{minikube_admin_crt_base64}}
+    admin_key: {{minikube_admin_key_base64}}
 
-resource_types: 
-- name: kubernetes
+resource_types:
+- name: helm
   type: docker-image
   source:
-    repository: sharor/kubernetes-resource
-    tag: '1.0.30'
+    repository: linkyard/concourse-helm-resource
