@@ -54,40 +54,9 @@ jobs:
   - get: version
   - put: version
     params: {bump: patch}
-  - task: build
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source: 
-          repository: golang
-          tag: "1.9"
-      inputs: 
-        - name: git
-      outputs: 
-        - name: artifacts
-      run:
-        path: sh
-        args:
-        - -exc
-        - |
-            C_PATH=$(pwd)
-            cd git           
-            export GOOS=linux
-            export GOARCH=amd64
-            export CGO_ENABLED=0
-            go build -a -installsuffix cgo -o $C_PATH/artifacts/check check/check.go
-            go build -a -installsuffix cgo -o $C_PATH/artifacts/in in/in.go 
-            go build -a -installsuffix cgo -o $C_PATH/artifacts/out out/out.go 
-
-            chmod +x $C_PATH/artifacts/check
-            chmod +x $C_PATH/artifacts/in
-            chmod +x $C_PATH/artifacts/out
-            cp Dockerfile $C_PATH/artifacts/Dockerfile
-            
   - put: release
     params:       
-      build: artifacts
+      build: git
       cache: false
       tag: version/version
       tag_as_latest: true
