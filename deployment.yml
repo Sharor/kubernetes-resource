@@ -23,7 +23,7 @@ spec:
         run: deploy-test
     spec:
       containers:
-      - image: sharor/helloworld
+      - image: sharor/hello-world
         imagePullPolicy: IfNotPresent
         name: deploy-test
       restartPolicy: Always
