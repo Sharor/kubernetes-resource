@@ -1,4 +1,9 @@
 FROM gliderlabs/alpine:3.6
 LABEL Maintainer=Sharor,groenborg,naesheim
-RUN apk-install python3
-COPY check/check.py in/in.py out/out.py /opt/resource/
+COPY requirements.txt .
+RUN apk-install python3 && apk --update \
+  && add --virtual build-dependencies py-pip \
+  && pip install -r requirements.txt \
+  && apk del build-dependencies
+
+COPY check/check.py in/in.py out/out.py /opt/resource/  
